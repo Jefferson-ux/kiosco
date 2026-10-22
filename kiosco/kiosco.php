@@ -26,7 +26,7 @@
   .stage { margin: auto; }
 
   /* ---------- Contenedor de enlaces (escritorio: debajo del reloj) ---------- */
-  .form-link-container-desktop {
+  .form-link-container {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -65,7 +65,7 @@
     .clock-time { order: -2; text-align: center; }
     .clock-date { order: -1; text-align: center; }
     /* .cam-panel queda en el orden 0: la cámara */
-    .form-link-container-desktop { order: 1; align-items: center; margin-top: 0; }
+    .form-link-container { order: 1; align-items: center; margin-top: 0; }
     .brand { order: 2; text-align: center; padding-top: 4px; }
   }
 </style>
@@ -100,7 +100,7 @@
   <section class="clock-panel" aria-label="Fecha y hora actual">
     <div class="clock-time" id="clockTime" aria-live="off">--:-- --</div>
     <div class="clock-date" id="clockDate"></div>
-    <div class="form-link-container-desktop">
+    <div class="form-link-container">
             <a class  ="form-link" href="code-qr.php">
               Registrar mediante QR
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

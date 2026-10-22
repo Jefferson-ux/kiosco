@@ -1,35 +1,21 @@
 /* =========================================================
-   CONFIGURACIÓN: lo único que normalmente debes editar
-   ========================================================= */
+    CONFIGURACIÓN: lo único que normalmente debes editar
+    ========================================================= */
 const CONFIG = {
-  // ----- API -----
-  API_URL: "http://127.0.0.1:8000/api/v1/attendance/mark",
-
-  // Token de acceso (sin la palabra "Bearer"). Cámbialo cuando expire.
-  TOKEN: localStorage.getItem('bearer token'),
+  // ----- API (Apunta a tu archivo PHP intermediario) -----
+  API_URL: "/backend/mark_attendance.php",
 
   // Zona horaria e idioma para mostrar fechas
   TIMEZONE: "America/Lima",
   LOCALE: "es-PE",
 
   // ----- Lector QR -----
-  // Cámara: "environment" = trasera, "user" = frontal
   FACING_MODE: "environment",
-
-  // Cada cuántos ms se analiza un frame (más alto = menos consumo)
-  SCAN_INTERVAL: 150,
-
-  // Ancho máximo al que se reduce el frame para analizarlo con jsQR
+  SCAN_INTERVAL: 30,
   MAX_SCAN_WIDTH: 720,
-
-  // Tras leer un QR, detener la cámara automáticamente
   STOP_AFTER_SCAN: true,
 
-  // Saca el código de empleado del contenido del QR (tal cual, sin formato fijo).
-  // Devuelve null si el QR está vacío.
   extractCode: (text) => text.trim() || null,
-
-  // Validación opcional del código. Ejemplo: /^[A-Za-z0-9-]+$/
   VALIDATE: null,
 
   // ----- Textos de la interfaz -----
@@ -52,7 +38,6 @@ const CONFIG = {
     incomplete: "Incompleto",
   },
 
-  // Campo de "attendance" que contiene la hora según el tipo de marcación
   TIME_FIELD: {
     ENTRY: "check_in_at",
     BREAK_START: "break_start_at",
@@ -60,24 +45,21 @@ const CONFIG = {
     EXIT: "check_out_at",
   },
 
-  // Etiquetas y colores de puntualidad (estados que devuelve la API)
   PUNCTUALITY: {
     present: { label: "A tiempo", color: "#2fce8f" },
     on_time: { label: "A tiempo", color: "#2fce8f" },
     late: { label: "Tarde", color: "#ffb347" },
   },
 
-  // Condición de la salida (EXIT): viene en punctuality.status
   getCondition: (attendance) => attendance?.punctuality?.status,
   INCOMPLETE_VALUE: "incomplete",
 
-  // Qué hacer al leer un código: registrar la marcación en la API
   onScan: (code) => registerCode(code),
 };
 
 /* =========================================================
-   ELEMENTOS DEL DOM
-   ========================================================= */
+    ELEMENTOS DEL DOM
+    ========================================================= */
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -95,15 +77,14 @@ let stream = null;
 let scanning = false;
 let timer = null;
 
-// El lector nativo del navegador es más preciso; jsQR es el respaldo
 const nativeDetector =
   "BarcodeDetector" in window
     ? new BarcodeDetector({ formats: ["qr_code"] })
     : null;
 
 /* =========================================================
-   CÁMARA
-   ========================================================= */
+    CÁMARA
+    ========================================================= */
 async function startScanner() {
   if (!nativeDetector && typeof jsQR === "undefined") {
     alert(CONFIG.TEXTS.noLib);
@@ -165,11 +146,9 @@ function stopScanner() {
 }
 
 /* =========================================================
-   LECTURA DEL QR
-   ========================================================= */
-// Devuelve el texto del QR o null
+    LECTURA DEL QR
+    ========================================================= */
 async function readFrame() {
-  // 1) Lector nativo (si el navegador lo trae)
   if (nativeDetector) {
     try {
       const codes = await nativeDetector.detect(video);
@@ -179,7 +158,6 @@ async function readFrame() {
     }
   }
 
-  // 2) jsQR sobre una copia reducida del frame
   if (typeof jsQR === "undefined") return null;
 
   const scale = Math.min(1, CONFIG.MAX_SCAN_WIDTH / video.videoWidth);
@@ -189,7 +167,7 @@ async function readFrame() {
 
   const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const code = jsQR(img.data, img.width, img.height, {
-    inversionAttempts: "attemptBoth", // lee también QR claros sobre fondo oscuro
+    inversionAttempts: "attemptBoth",
   });
   return code?.data ?? null;
 }
@@ -217,7 +195,7 @@ function handleResult(rawText) {
 
   if (!code || (CONFIG.VALIDATE && !CONFIG.VALIDATE.test(code))) {
     statusEl.textContent = CONFIG.TEXTS.invalid;
-    return; // sigue escaneando
+    return;
   }
 
   frame.classList.add("found");
@@ -226,8 +204,6 @@ function handleResult(rawText) {
 
   if (navigator.vibrate) navigator.vibrate(80);
 
-  // Primero se detiene la cámara; después se registra
-  // (así el botón no se pisa con el texto "Registrando…")
   if (CONFIG.STOP_AFTER_SCAN) {
     stopScanner();
     toggleBtn.textContent = CONFIG.TEXTS.scanAgain;
@@ -237,8 +213,8 @@ function handleResult(rawText) {
 }
 
 /* =========================================================
-   UTILIDADES
-   ========================================================= */
+    UTILIDADES
+    ========================================================= */
 function uuid() {
   if (crypto.randomUUID) return crypto.randomUUID();
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -257,8 +233,8 @@ function formatDateTime(iso) {
 }
 
 /* =========================================================
-   MOSTRAR RESPUESTA
-   ========================================================= */
+    MOSTRAR RESPUESTA
+    ========================================================= */
 function showResponse({ ok, message, data, type }) {
   const node = template.content.cloneNode(true);
   node.querySelector(".response").classList.add(ok ? "success" : "error");
@@ -280,7 +256,6 @@ function showResponse({ ok, message, data, type }) {
       formatDateTime(attendance[CONFIG.TIME_FIELD[type]]);
 
     if (type === "ENTRY") {
-      // Entrada: puntualidad y minutos tarde
       const info = CONFIG.PUNCTUALITY[punctuality.status];
       value.textContent = info?.label ?? punctuality.status ?? "—";
       if (info) value.style.color = info.color;
@@ -292,7 +267,6 @@ function showResponse({ ok, message, data, type }) {
         lateRow.remove();
       }
     } else if (type === "EXIT") {
-      // Salida: condición (completado / incompleto)
       const incomplete =
         CONFIG.getCondition(attendance) === CONFIG.INCOMPLETE_VALUE;
       label.textContent = CONFIG.TEXTS.conditionLabel;
@@ -302,7 +276,6 @@ function showResponse({ ok, message, data, type }) {
       value.style.color = incomplete ? "#ffb347" : "#2fce8f";
       lateRow.remove();
     } else {
-      // BREAK_START y BREAK_END: sin puntualidad ni minutos tarde
       punctRow.remove();
       lateRow.remove();
     }
@@ -314,10 +287,9 @@ function showResponse({ ok, message, data, type }) {
 }
 
 /* =========================================================
-   ENVÍO A LA API
-   ========================================================= */
-// request_id: se reutiliza si el mismo código/tipo falló por red (reintento seguro)
-let pending = null; // { code, type, id }
+    ENVÍO AL BACKEND (PHP)
+    ========================================================= */
+let pending = null;
 
 function requestIdFor(code, type) {
   if (!(pending && pending.code === code && pending.type === type)) {
@@ -326,7 +298,6 @@ function requestIdFor(code, type) {
   return pending.id;
 }
 
-// Lanza Error("NETWORK") solo si falla la conexión
 async function markAttendance(employeeCode, type) {
   let res;
   try {
@@ -335,11 +306,10 @@ async function markAttendance(employeeCode, type) {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${CONFIG.TOKEN}`,
       },
       body: JSON.stringify({
         employee_code: employeeCode,
-        type,
+        type: type,
         request_id: requestIdFor(employeeCode, type),
       }),
     });
@@ -356,7 +326,6 @@ async function markAttendance(employeeCode, type) {
   return { res, body };
 }
 
-// Registra la marcación del código leído y muestra el resultado
 async function registerCode(code) {
   const type = typeSelect.value;
 
@@ -365,7 +334,7 @@ async function registerCode(code) {
 
   try {
     const { res, body } = await markAttendance(code, type);
-    pending = null; // el servidor respondió: el request_id ya cumplió su función
+    pending = null; 
 
     if (res.ok && body?.success) {
       showResponse({ ok: true, message: body.message, data: body.data, type });
@@ -391,8 +360,8 @@ async function registerCode(code) {
 }
 
 /* =========================================================
-   EVENTOS
-   ========================================================= */
+    EVENTOS
+    ========================================================= */
 toggleBtn.addEventListener("click", () => {
   if (scanning) {
     stopScanner();
@@ -402,7 +371,6 @@ toggleBtn.addEventListener("click", () => {
   }
 });
 
-// Apaga la cámara si el usuario cambia de pestaña o cierra la página
 document.addEventListener("visibilitychange", () => {
   if (document.hidden && scanning) {
     stopScanner();
