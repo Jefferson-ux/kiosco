@@ -29,7 +29,7 @@ $type = $input['type'] ?? null;
 $request_id = $input['request_id'] ?? null;
 
 // Validar parámetros requeridos
-if (!$employee_code || !$type || !$request_id) {
+if (!$employee_code || !$request_id) {
     http_response_code(400);
     echo json_encode(["success" => false, "message" => "Parámetros incompletos"]);
     exit;

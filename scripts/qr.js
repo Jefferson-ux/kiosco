@@ -5,10 +5,6 @@ const CONFIG = {
   // ----- API (Apunta a tu archivo PHP intermediario) -----
   API_URL: "/backend/mark_attendance.php",
 
-  // Zona horaria e idioma para mostrar fechas
-  TIMEZONE: "America/Lima",
-  LOCALE: "es-PE",
-
   // ----- Lector QR -----
   FACING_MODE: "environment",
   SCAN_INTERVAL: 30,
@@ -38,18 +34,6 @@ const CONFIG = {
     incomplete: "Incompleto",
   },
 
-  TIME_FIELD: {
-    ENTRY: "check_in_at",
-    BREAK_START: "break_start_at",
-    BREAK_END: "break_end_at",
-    EXIT: "check_out_at",
-  },
-
-  PUNCTUALITY: {
-    present: { label: "A tiempo", color: "#2fce8f" },
-    on_time: { label: "A tiempo", color: "#2fce8f" },
-    late: { label: "Tarde", color: "#ffb347" },
-  },
 
   getCondition: (attendance) => attendance?.punctuality?.status,
   INCOMPLETE_VALUE: "incomplete",
@@ -69,7 +53,7 @@ const statusEl = document.getElementById("status");
 const toggleBtn = document.getElementById("toggleBtn");
 const resultBox = document.getElementById("result");
 const resultText = document.getElementById("resultText");
-const typeSelect = document.getElementById("type_select");
+// const typeSelect = document.getElementById("type_select");
 const container = document.getElementById("response-container");
 const template = document.getElementById("response-template");
 
@@ -233,79 +217,18 @@ function formatDateTime(iso) {
 }
 
 /* =========================================================
-    MOSTRAR RESPUESTA
-    ========================================================= */
-function showResponse({ ok, message, data, type }) {
-  const node = template.content.cloneNode(true);
-  node.querySelector(".response").classList.add(ok ? "success" : "error");
-  node.querySelector(".response_message").textContent = message;
-
-  const details = node.querySelector(".response_details");
-
-  if (ok && data) {
-    const { employee, attendance } = data;
-    const punctuality = attendance.punctuality ?? {};
-    const punctRow = node.querySelector(".response_punctuality");
-    const lateRow = node.querySelector(".response_late");
-    const label = punctRow.querySelector("strong");
-    const value = punctRow.querySelector("span");
-
-    node.querySelector(".response_employee span").textContent =
-      `${employee.full_name} (${employee.employee_code})`;
-
-    node.querySelector(".response_datetime span").textContent =
-      formatDateTime(attendance[CONFIG.TIME_FIELD[type]]);
-
-    node.querySelector(".response_next_action span").textContent =
-      attendance.next_action;
-
-
-
-
-    if (type === "ENTRY") {
-      const info = CONFIG.PUNCTUALITY[punctuality.status];
-      value.textContent = info?.label ?? punctuality.status ?? "—";
-      if (info) value.style.color = info.color;
-
-      if (punctuality.status === "late") {
-        lateRow.querySelector("span").textContent =
-          `${punctuality.late_minutes} min`;
-      } else {
-        lateRow.remove();
-      }
-    } else if (type === "EXIT") {
-      const incomplete =
-        CONFIG.getCondition(attendance) === CONFIG.INCOMPLETE_VALUE;
-      label.textContent = CONFIG.TEXTS.conditionLabel;
-      value.textContent = incomplete
-        ? CONFIG.TEXTS.incomplete
-        : CONFIG.TEXTS.completed;
-      value.style.color = incomplete ? "#ffb347" : "#2fce8f";
-      lateRow.remove();
-    } else {
-      punctRow.remove();
-      lateRow.remove();
-    }
-  } else {
-    details.remove();
-  }
-
-  container.replaceChildren(node);
-}
-
-/* =========================================================
     ENVÍO AL BACKEND (PHP)
     ========================================================= */
 let pending = null;
 
-function requestIdFor(code, type) {
-  if (!(pending && pending.code === code && pending.type === type)) {
-    pending = { code, type, id: uuid() };
+function requestIdFor(code) {
+  if (!(pending && pending.code === code )) {
+    pending = { code, id: uuid() };
   }
   return pending.id;
 }
 
-async function markAttendance(employeeCode, type) {
+async function markAttendance(employeeCode) {
   let res;
   try {
     res = await fetch(CONFIG.API_URL, {
@@ -316,8 +239,8 @@ async function markAttendance(employeeCode, type) {
       },
       body: JSON.stringify({
         employee_code: employeeCode,
-        type: type,
-        request_id: requestIdFor(employeeCode, type),
+        // type: type,
+        request_id: requestIdFor(employeeCode),
       }),
     });
   } catch {
@@ -334,17 +257,17 @@ async function markAttendance(employeeCode, type) {
 }
 
 async function registerCode(code) {
-  const type = typeSelect.value;
+  // const type = typeSelect.value;
 
   toggleBtn.disabled = true;
   toggleBtn.textContent = CONFIG.TEXTS.loading;
 
   try {
-    const { res, body } = await markAttendance(code, type);
+    const { res, body } = await markAttendance(code);
     pending = null;
 
     if (res.ok && body?.success) {
-      showResponse({ ok: true, message: body.message, data: body.data, type });
+      showResponse({ ok: true, message: body.message, data: body.data});
     } else {
       showResponse({
         ok: false,

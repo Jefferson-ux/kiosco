@@ -3,8 +3,6 @@
     ========================================================= */
 const CONFIG = {
   API_URL: "/backend/mark_attendance.php",
-  TIMEZONE: "America/Lima",
-  LOCALE: "es-PE",
 
   TEXTS: {
     loading: "Registrando…",
@@ -16,30 +14,6 @@ const CONFIG = {
     completed: "Completado",
     incomplete: "Incompleto",
   },
-
-  TIME_FIELD: {
-    ENTRY: "check_in_at",
-    BREAK_START: "break_start_at",
-    BREAK_END: "break_end_at",
-    EXIT: "check_out_at",
-  },
-
-  PUNCTUALITY: {
-    present: { label: "A tiempo", color: "#2fce8f" },
-    on_time: { label: "A tiempo", color: "#2fce8f" },
-    late: { label: "Tarde", color: "#ffb347" },
-  },
-
-  NEXT_ACTION: {
-    ENTRY: { label: "ENTRADA", color: "#10B981" },
-    BREAK_START: { label: "INICIO DEL DESCANSO", color: "#F59E0B" },
-    BREAK_END: { label: "FINAL DEL DESCANSO", color: "#3B82F6" },
-    EXIT: { label: "SALIDA", color: "#EF4444" },
-    COMPLETED: { label: "COMPLETADO", color: "#B2FFFF" },
-  },
-
-  getCondition: (attendance) => attendance?.punctuality?.status,
-  INCOMPLETE_VALUE: "incomplete",
 };
 
 /* =========================================================
@@ -74,68 +48,6 @@ function formatDateTime(iso) {
   });
 }
 
-/* =========================================================
-    MOSTRAR RESPUESTA
-    ========================================================= */
-function showResponse({ ok, message, data, type }) {
-  if (!template || !container) return;
-
-  const node = template.content.cloneNode(true);
-  node.querySelector(".response").classList.add(ok ? "success" : "error");
-  node.querySelector(".response_message").textContent = message;
-
-  const details = node.querySelector(".response_details");
-
-  if (ok && data) {
-    const { employee, attendance } = data;
-    const punctuality = attendance.punctuality ?? {};
-    const punctRow = node.querySelector(".response_punctuality");
-    const nextActionRow = node.querySelector(".response_next_action");
-    const lateRow = node.querySelector(".response_late");
-    const label = punctRow.querySelector("strong");
-    const value = punctRow.querySelector("span");
-
-    node.querySelector(".response_employee span").textContent =
-      `${employee.full_name} (${employee.employee_code})`;
-    node.querySelector(".response_datetime span").textContent =
-      formatDateTime(attendance[CONFIG.TIME_FIELD[type]]);
-
-
-    const next = CONFIG.NEXT_ACTION[attendance.next_action];
-    nextActionRow.querySelector("span").textContent =
-      next.label;
-    nextActionRow.querySelector("span").style.color = next.color;
-
-    if (type === "ENTRY") {
-      const info = CONFIG.PUNCTUALITY[punctuality.status];
-      value.textContent = info?.label ?? punctuality.status ?? "—";
-      if (info) value.style.color = info.color;
-
-      if (punctuality.status === "late") {
-        lateRow.querySelector("span").textContent =
-          `${punctuality.late_minutes} min`;
-      } else {
-        lateRow.remove();
-      }
-    } else if (type === "EXIT") {
-      const incomplete =
-        CONFIG.getCondition(attendance) === CONFIG.INCOMPLETE_VALUE;
-      label.textContent = CONFIG.TEXTS.conditionLabel;
-      value.textContent = incomplete
-        ? CONFIG.TEXTS.incomplete
-        : CONFIG.TEXTS.completed;
-      value.style.color = incomplete ? "#ffb347" : "#2fce8f";
-      lateRow.remove();
-    } else {
-      punctRow.remove();
-      lateRow.remove();
-    }
-  } else {
-    details.remove();
-  }
-
-  container.replaceChildren(node);
-}
 
 /* =========================================================
     ENVÍO AL BACKEND (PHP)

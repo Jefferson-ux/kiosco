@@ -1,5 +1,6 @@
 <?php
     require_once __DIR__ . '/session.php';
+    require_once __DIR__ . '/config.php';
 
     if ($_SERVER["REQUEST_METHOD"] !== "POST") {
         header("Location: ../index.php");
@@ -16,7 +17,7 @@
     }   // <- se cierra aquí
 
     // 1. Inicializar cURL
-    $url = "http://127.0.0.1:8000/api/v1/login";
+    $url = API_BASE_URL . '/login';
 
     $ch = curl_init($url);
 

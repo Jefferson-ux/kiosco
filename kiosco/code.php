@@ -77,7 +77,7 @@
                                 inputmode="text" autofocus required>
                      </div>
 
-                     <div class="field">
+                     <!-- <div class="field">
                          <label for="type_select">Tipo de marcación</label>
                          <select id="type_select">
                              <option value="ENTRY">Entrada</option>
@@ -85,7 +85,7 @@
                              <option value="BREAK_END">Fin de descanso</option>
                              <option value="EXIT">Salida</option>
                          </select>
-                     </div>
+                     </div> -->
                  </div>
 
                  <button type="button" id="submitBtn" class="start-btn">Registrar</button>
@@ -133,5 +133,6 @@
     </dialog>
     <script src="./../scripts/mark.js"></script>
     <script src="./../scripts/clock.js"></script>
+    <script src="../scripts/response.js"></script>
 </body>
 </html>

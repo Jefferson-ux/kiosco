@@ -25,7 +25,7 @@
         <span class="qr-status" id="status" hidden>Apunta al código QR…</span>
       </div>
 
-      <div class="qr-options">
+      <!-- <div class="qr-options">
         <label for="type_select">Tipo de marcación</label>
         <select id="type_select">
           <option value="ENTRY">Entrada</option>
@@ -33,7 +33,7 @@
           <option value="BREAK_END">Fin de descanso</option>
           <option value="EXIT">Salida</option>
         </select>
-      </div>
+      </div> -->
 
       <button class="qr-btn" id="toggleBtn" type="button">Iniciar escáner</button>
 
@@ -78,5 +78,6 @@
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script src="./../scripts/qr.js"></script>
   <script src="./../scripts/clock.js"></script>
+  <script src="../scripts/response.js"></script>
 </body>
 </html>
