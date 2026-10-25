@@ -55,7 +55,7 @@
           <path d="M5 12h14M13 6l6 6-6 6"/>
         </svg>
       </a>
-      
+
       <div class="brand">Control de Asistencia</div>
     </section>
   </main>
@@ -70,6 +70,7 @@
         <div class="response_datetime"><strong>Hora marcada</strong> <span></span></div>
         <div class="response_punctuality"><strong>Puntualidad</strong> <span></span></div>
         <div class="response_late"><strong>Minutos tarde</strong> <span></span></div>
+        <div class="response_next_action"><strong>Siguiente Acción</strong> <span></span></div>
       </div>
     </article>
   </template>

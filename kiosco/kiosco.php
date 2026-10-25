@@ -127,6 +127,5 @@
 
 <script src="./../scripts/script.js"></script>
 <script src="./../scripts/clock.js"></script>
-
 </body>
 </html>

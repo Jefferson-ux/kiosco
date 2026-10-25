@@ -30,6 +30,14 @@ const CONFIG = {
     late: { label: "Tarde", color: "#ffb347" },
   },
 
+  NEXT_ACTION: {
+    ENTRY: { label: "ENTRADA", color: "#10B981" },
+    BREAK_START: { label: "INICIO DEL DESCANSO", color: "#F59E0B" },
+    BREAK_END: { label: "FINAL DEL DESCANSO", color: "#3B82F6" },
+    EXIT: { label: "SALIDA", color: "#EF4444" },
+    COMPLETED: { label: "COMPLETADO", color: "#B2FFFF" },
+  },
+
   getCondition: (attendance) => attendance?.punctuality?.status,
   INCOMPLETE_VALUE: "incomplete",
 };
@@ -71,7 +79,7 @@ function formatDateTime(iso) {
     ========================================================= */
 function showResponse({ ok, message, data, type }) {
   if (!template || !container) return;
-  
+
   const node = template.content.cloneNode(true);
   node.querySelector(".response").classList.add(ok ? "success" : "error");
   node.querySelector(".response_message").textContent = message;
@@ -82,6 +90,7 @@ function showResponse({ ok, message, data, type }) {
     const { employee, attendance } = data;
     const punctuality = attendance.punctuality ?? {};
     const punctRow = node.querySelector(".response_punctuality");
+    const nextActionRow = node.querySelector(".response_next_action");
     const lateRow = node.querySelector(".response_late");
     const label = punctRow.querySelector("strong");
     const value = punctRow.querySelector("span");
@@ -90,6 +99,12 @@ function showResponse({ ok, message, data, type }) {
       `${employee.full_name} (${employee.employee_code})`;
     node.querySelector(".response_datetime span").textContent =
       formatDateTime(attendance[CONFIG.TIME_FIELD[type]]);
+
+
+    const next = CONFIG.NEXT_ACTION[attendance.next_action];
+    nextActionRow.querySelector("span").textContent =
+      next.label;
+    nextActionRow.querySelector("span").style.color = next.color;
 
     if (type === "ENTRY") {
       const info = CONFIG.PUNCTUALITY[punctuality.status];
@@ -176,7 +191,7 @@ async function handleFormSubmit() {
 
   try {
     const { res, body } = await markAttendance(employeeCode, type);
-    pending = null; 
+    pending = null;
 
     if (res.ok && body?.success) {
       showResponse({ ok: true, message: body.message, data: body.data, type });

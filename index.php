@@ -1,5 +1,5 @@
 <?php
-    session_start();
+    require_once __DIR__ . '/backend/session.php';
     $error = $_SESSION["error"] ?? null;
     unset($_SESSION["error"]); // se borra para que salga solo una vez
 ?>
@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="styles/auth.css">
 </head>
 <body class="auth-page">
-    <form class="auth-form" action="backend/api.php" method="POST">
+    <form class="auth-form" action="backend/login.php" method="POST">
         <h1>Iniciar Sesión</h1>
         <p class="auth-subtitle">Ingresa tus credenciales para continuar</p>
         <?php if ($error): ?>

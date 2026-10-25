@@ -252,8 +252,15 @@ function showResponse({ ok, message, data, type }) {
 
     node.querySelector(".response_employee span").textContent =
       `${employee.full_name} (${employee.employee_code})`;
+
     node.querySelector(".response_datetime span").textContent =
       formatDateTime(attendance[CONFIG.TIME_FIELD[type]]);
+
+    node.querySelector(".response_next_action span").textContent =
+      attendance.next_action;
+
+
+
 
     if (type === "ENTRY") {
       const info = CONFIG.PUNCTUALITY[punctuality.status];
@@ -334,7 +341,7 @@ async function registerCode(code) {
 
   try {
     const { res, body } = await markAttendance(code, type);
-    pending = null; 
+    pending = null;
 
     if (res.ok && body?.success) {
       showResponse({ ok: true, message: body.message, data: body.data, type });
