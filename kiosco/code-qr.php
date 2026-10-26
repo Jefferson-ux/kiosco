@@ -7,6 +7,7 @@
   <title>Marcación por QR</title>
     <link rel="stylesheet" href="./../styles/global.css">
       <link rel="stylesheet" href="./../styles/qr.css">
+      <link rel="stylesheet" href="./../styles/kiosco.css">
 </head>
 <body>
   <main class="stage">

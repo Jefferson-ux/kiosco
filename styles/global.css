@@ -28,17 +28,23 @@
      background: radial-gradient(circle at 20% 15%, #1a2350 0%, var(--bg-top) 45%, var(--bg-bottom) 100%);
      color: var(--ink);
      min-height: 100dvh;
+     display: flex;
+     align-items: center;
+     justify-content: center;
      padding: clamp(16px, 4vw, 40px);
      overflow: hidden;
  }
 
  .stage {
      width: 100%;
+     margin: auto;
      max-width: 920px;
      display: grid;
      grid-template-columns: 1.05fr 1fr;
      gap: clamp(14px, 2.5vw, 26px);
  }
+
+   .stage { margin: auto; }
 
  @media (max-width:720px) {
      .stage {
@@ -294,3 +300,7 @@
          animation: none;
      }
  }
+
+
+
+
